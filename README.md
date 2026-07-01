@@ -8,15 +8,14 @@ This repo is the command center UI. It talks to a separate engine (the "SOC engi
 
 **Dashboard**
 
-The threat hunting interface. An analyst types what they want investigated in plain language so no KQL required. That prompt goes to the backend, where the AI agent picks the log table, fields, and time range on its own before running anything.
-view of the current case load: total cases, how many are still open, how many are high-confidence, and cumulative AI cost across all hunts run so far.
+View of the current case load: total cases, how many are still open, how many are high-confidence, and cumulative AI cost across all hunts run so far.
 <img width="2546" height="1060" alt="image" src="https://github.com/user-attachments/assets/ed7736de-a7f0-4b70-ae31-b631f5a94dfc" />
 
 ---
 
 **Threat hunt search**
 
-
+The threat hunting interface. An analyst types what they want investigated in plain language, so no KQL is required. That prompt goes to the backend, where the AI agent picks the log table, fields, and time range on its own before running anything.
 <img width="1274" height="434" alt="image" src="https://github.com/user-attachments/assets/031f3488-297e-44dd-8fd1-92731d39ad1f" />
 
 ---
