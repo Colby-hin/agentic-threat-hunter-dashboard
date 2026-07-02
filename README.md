@@ -26,7 +26,6 @@ This is a web dashboard built on top of an existing AI threat hunting engine. Th
 - Microsoft Defender for Endpoint
 - Next.js (React + TypeScript)
 - Tailwind CSS
-- VirusTotal API
 
 ## Setup and what each piece does
 
