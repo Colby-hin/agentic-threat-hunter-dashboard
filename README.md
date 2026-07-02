@@ -1,4 +1,4 @@
-# Agentic SOC Dashboard 
+# Agentic Threat Hunter Dashboard 
 
 ## What this is
 
