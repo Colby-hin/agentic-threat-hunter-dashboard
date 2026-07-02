@@ -1,101 +1,112 @@
-# Agentic SOC Dashboard
+# Agentic SOC Dashboard 
 
-A web dashboard for AI-assisted threat hunting. Analysts describe what they want to investigate in plain language, review AI-generated findings mapped to MITRE ATT&CK, track cases through to resolution, and see exactly what each investigation cost in AI spend.
+## What this is
 
-This repo is the command center UI. It talks to a separate engine (the "SOC engine") that handles log querying and AI analysis.
+This is a web dashboard built on top of an existing AI threat hunting engine. The engine already worked on its own as a command line tool. It could query security logs and use AI to analyze them, but it only ran in a terminal. This dashboard sits on top of that engine. It makes it easier to search, review, and document findings, and it brings useful tools like file reputation checks directly into the interface instead of requiring separate manual steps.
 
----
+<img width="1710" height="1089" alt="image" src="https://github.com/user-attachments/assets/9bf70ceb-d12e-49f5-94eb-3cd4e33f61d5" />
 
-**Dashboard**
-
-View of the current case load: total cases, how many are still open, how many are high-confidence, and cumulative AI cost across all hunts run so far.
-<img width="2546" height="1060" alt="image" src="https://github.com/user-attachments/assets/ed7736de-a7f0-4b70-ae31-b631f5a94dfc" />
-
----
-
-**Threat hunt search**
-
-The threat hunting interface. An analyst types what they want investigated in plain language, so no KQL is required. That prompt goes to the backend, where the AI agent picks the log table, fields, and time range on its own before running anything.
-<img width="1274" height="434" alt="image" src="https://github.com/user-attachments/assets/031f3488-297e-44dd-8fd1-92731d39ad1f" />
-
----
-
-**Threat hunt results**
-
-After a hunt has completed, showing the finding cards with titles, confidence badges, and MITRE tags visible.
-<img width="2545" height="640" alt="image" src="https://github.com/user-attachments/assets/5cbb40a2-6496-4d10-8a5f-3c8cee74a477" />
-
----
-
-**Investigation queue**
-
-Every open case, sorted so the highest-confidence findings surface first.
-<img width="2434" height="778" alt="image" src="https://github.com/user-attachments/assets/13da8ef6-e6e7-49e3-9b3d-19fae42d8a69" />
-
----
-
-**Case detail**
-
-Clicking into a case opens the single-case view: a status dropdown to move it through open → investigating → resolved → ignored, the MITRE ATT&CK tactic and technique it was mapped to, and an analyst notes panel for logging what was reviewed and concluded.
-<img width="2535" height="951" alt="image" src="https://github.com/user-attachments/assets/eb5f4cba-0f1b-492c-bf1f-17c9f1e4744d" />
-
-<img width="2550" height="865" alt="image" src="https://github.com/user-attachments/assets/cccb9c54-82e3-4d70-9c69-35c5eeee6506" />
-
----
-
-**Intel view**
-
-Aggregates MITRE tactics and techniques across all cases, so recurring patterns are visible instead of only being readable one case at a time.
-<img width="2549" height="590" alt="image" src="https://github.com/user-attachments/assets/28b5482f-83b2-4a63-aeb0-eaeca9ddfa68" />
-
----
-
-## Platform stack
-
-- Next.js (App Router)
-- React + TypeScript
-- Tailwind CSS
-- REST integration with the Agentic SOC engine (FastAPI backend)
-
-## Purpose
-
-This dashboard gives an analyst a single place to:
-
-- Run AI-assisted threat hunts against live log data
-- Review findings mapped to MITRE ATT&CK tactics and techniques
-- Triage and prioritize open investigations
-- Track case status and analyst notes over time
-- See the real dollar cost of every AI-driven investigation
-
-## Core SOC pages
-
-| Page | Function |
-|---|---|
-| `/hunts` | Threat hunting — describe an investigation in plain language, get AI-analyzed findings |
-| `/results` | Full results table — every finding across every hunt, sortable by confidence and status |
-| `/investigation` | Active investigation queue — open cases, highest confidence first |
-| `/cases` | Case list and detail — evidence, status changes, analyst notes |
-| `/memory` | Memory vault — every analyst note across every case, in one feed |
-| `/intel` | Intel — MITRE ATT&CK tactics and techniques observed, aggregated across all cases |
 
 ## Capabilities
 
-- **Natural-language threat hunting.** No KQL required. Describe what to investigate, and the backend's AI agent picks the table, fields, and time range on its own.
-- **MITRE ATT&CK mapping.** Every finding includes tactic, technique, sub-technique, and a confidence rating.
-- **Case lifecycle tracking.** Open → Investigating → Resolved → Ignored, with a persistent analyst notes thread per case.
-- **Live AI cost accounting.** Real token usage from each hunt is priced against actual model rates and shown on the dashboard — not an estimate, the real cost.
-- **Cross-case intelligence.** The Intel page aggregates tactics and techniques across every case so patterns are visible at a glance, instead of buried inside individual findings.
+- Natural language threat hunting, no special query syntax required
+- Findings automatically mapped to MITRE ATT&CK tactics and techniques, with a confidence rating
+- Case lifecycle tracking, moving a finding through open, investigating, resolved, or ignored
+- A permanent analyst notes thread on every case
+- File hash reputation checks against VirusTotal
+- Real AI cost tracked per hunt, based on actual token usage rather than an estimate
+- Cross case pattern views, showing which attack techniques show up most often
 
-## Integration
+## Platform stack
 
-This dashboard is the UI layer only — it does not query logs or call the AI directly. All of that happens in a separate backend service (the Agentic SOC engine) which:
+- Python
+- FastAPI
+- SQLite
+- OpenAI API
+- Azure Log Analytics
+- Microsoft Defender for Endpoint
+- Next.js (React + TypeScript)
+- Tailwind CSS
+- VirusTotal API
 
-- Accepts a natural-language hunt request and uses OpenAI function calling to select a Log Analytics query
-- Validates the AI's chosen table and fields against an allow-list before executing anything
-- Queries Azure Log Analytics for real log data
-- Runs a second AI pass to analyze the logs and produce structured findings
-- Persists cases, notes, and per-hunt cost data to a SQLite database
+## Setup and what each piece does
 
-This dashboard fetches from that backend's REST API (`/api/hunt`, `/api/cases`, `/api/cases/{id}`, `/api/notes`, `/api/hunts/summary`, and related endpoints) and renders the results.
+### Python and FastAPI
+
+The engine started as a plain Python script that only worked if you ran it directly in a terminal. FastAPI is a Python package that turns regular functions into web addresses a browser can call. Installing it is what allowed a website to trigger a hunt instead of only being able to run it from a terminal.
+
+Uvicorn is the program that actually runs the FastAPI app and keeps it listening for requests. FastAPI defines what should happen. Uvicorn is what's running in the background and answering when a request comes in.
+
+### SQLite
+
+SQLite comes built into Python, so it didn't need a separate install. It's the database that stores every case, every analyst note, and the cost of every hunt. It's what gives the tool a memory. Before this, results just printed to the screen once and were gone.
+
+### The requests library
+
+This is a small, common Python package used for making calls to other services online. It's what lets the backend reach out to VirusTotal and ask whether a specific file hash has been seen before.
+
+### Node.js
+
+Node.js lets JavaScript run outside of a browser. It's needed because the dashboard itself, built with Next.js and React, is written in JavaScript and TypeScript. Without Node.js installed, none of the frontend code can run.
+
+### Next.js, React, and Tailwind CSS
+
+React is the library that builds the actual interface, things like buttons, forms, and pages. Next.js is a framework built on top of React that organizes the app into pages automatically and handles a lot of setup that would otherwise need to be done by hand. Tailwind CSS is the styling system used to keep everything looking consistent without writing custom CSS for every element.
+
+## How it fits together
+
+The Python and FastAPI side and the Next.js side are two separate programs running at the same time. They talk to each other over the network. The dashboard sends a request, something like "run a hunt" or "give me all cases," and the engine sends back an answer. None of the engine's original logic had to change for this to work. The dashboard was built entirely as a layer on top, calling into the engine rather than replacing any part of it.
+
+## An example of how a request moves through the system 
+
+## Threat hunt search
+
+<img width="1703" height="349" alt="image" src="https://github.com/user-attachments/assets/bae19aa1-1fc4-42ad-b6d3-80c5e7ccf0ee" />
+
+---
+## Threat hunt findings
+
+<img width="1697" height="1197" alt="image" src="https://github.com/user-attachments/assets/33d3c753-15ad-4029-a76b-215d7d6ca18a" />
+
+---
+## Results section
+
+Every finding across every hunt, in one table.
+<img width="1695" height="508" alt="image" src="https://github.com/user-attachments/assets/bd4f6a18-ea2e-4562-8187-c0813feecd51" />
+
+---
+## Case detail
+
+This case is set to investigating. Status options are open, investigating, resolved, and closed.
+<img width="1707" height="765" alt="image" src="https://github.com/user-attachments/assets/c32c43aa-7c8f-409a-be5c-ae0db3b1dc9f" />
+
+
+
+---
+## Intel section 
+
+Tactics and techniques aggregated across all cases, clickable to see the cases behind each one.
+<img width="1467" height="785" alt="image" src="https://github.com/user-attachments/assets/4cb593ba-bd00-4316-82e5-1cfe7b3a5d86" />
+
+
+
+
+---
+
+## Behind the scenes flow
+
+```mermaid
+flowchart TD
+    A[Analyst types a request in the dashboard] --> B[Dashboard sends it to the engine's API]
+    B --> C[AI reads the request and picks a table, fields, and time range]
+    C --> D{Is the AI's choice on the allowed list?}
+    D -->|No| E[Request is blocked]
+    D -->|Yes| F[Real log data is pulled from Azure]
+    F --> G[A second AI pass reads the logs and writes findings]
+    G --> H[Findings are saved as cases in the database]
+    H --> I[Dashboard displays the results]
+```
+
+
 
 SOC Engine: https://github.com/Colby-hin/soc-engine
