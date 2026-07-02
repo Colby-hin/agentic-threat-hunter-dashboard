@@ -93,16 +93,23 @@ Tactics and techniques aggregated across all cases, clickable to see the cases b
 
 ## Behind the scenes flow
 
+flowchart TD
+
 ```mermaid
 flowchart TD
-    A[Analyst types a request in the dashboard] --> B[Dashboard sends it to the engine's API]
-    B --> C[AI reads the request and picks a table, fields, and time range]
-    C --> D{Is the AI's choice on the allowed list?}
-    D -->|No| E[Request is blocked]
-    D -->|Yes| F[Real log data is pulled from Azure]
-    F --> G[A second AI pass reads the logs and writes findings]
-    G --> H[Findings are saved as cases in the database]
-    H --> I[Dashboard displays the results]
+    A[Analyst types a request in the dashboard] --> B[Dashboard sends the request to the FastAPI backend]
+    B --> C[FastAPI passes the request into the Python threat hunting engine]
+    C --> D[OpenAI function calling creates a structured query plan]
+    D --> E[Python code validates the selected table, fields, time range, and scope]
+    E --> F{Is the plan allowed?}
+    F -->|No| G[Request is blocked before any query runs]
+    F -->|Yes| H[Python code builds and runs the KQL query against Azure Log Analytics]
+    H --> I[Azure Log Analytics returns matching records]
+    I --> J{Were records returned?}
+    J -->|No| K[Stop cleanly and show no results]
+    J -->|Yes| L[OpenAI analyzes the returned logs]
+    L --> M[Structured findings are returned]
+    M --> N[Findings are displayed to the user in the dashboard]
 ```
 
 ## This is still actively being built. More features are coming.
