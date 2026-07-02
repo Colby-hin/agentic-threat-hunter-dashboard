@@ -11,7 +11,7 @@ This is a web dashboard built on top of an existing AI threat hunting engine. Th
 
 - Natural language threat hunting, no special query syntax required
 - Findings automatically mapped to MITRE ATT&CK tactics and techniques, with a confidence rating
-- Case lifecycle tracking, moving a finding through open, investigating, resolved, or ignored
+- Case lifecycle tracking, moving a finding through open, investigating, resolved, or closed
 - A permanent analyst notes thread on every case
 - File hash reputation checks against VirusTotal
 - Real AI cost tracked per hunt, based on actual token usage rather than an estimate
@@ -107,6 +107,7 @@ flowchart TD
     H --> I[Dashboard displays the results]
 ```
 
+## This is still actively being built. More features are coming.
 
 
 SOC Engine: https://github.com/Colby-hin/soc-engine
